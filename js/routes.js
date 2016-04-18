@@ -4,9 +4,9 @@ module.exports = function (app) {
         res.redirect(`board/${newBoardId}`);
     });
 
-    app.get('board/:boardId', (req, res) => {
+    app.get('/board/:boardId', (req, res) => {
         res.render('board',
-            {boardId: req.params.boardId}
+            {boardId: req.params.boardId }
         )
     });
 };

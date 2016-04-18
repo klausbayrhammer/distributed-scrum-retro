@@ -13,9 +13,10 @@ module.exports = function () {
     });
 
     router.delete('/board/:boardId/card/:cardId', (req, res) => {
-        mongoose.models.Card.remove({board: req.params.boardId, _id: req.params.cardId}).then((res) => {
+        mongoose.models.Card.remove({board: req.params.boardId, _id: req.params.cardId}).then(data => {
             res.send('Successfully removed card')
         }).catch((err) => {
+            console.log(err);
             res.status(500).send(err);
         });
     });
