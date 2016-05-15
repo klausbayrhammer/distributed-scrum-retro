@@ -24,8 +24,22 @@ module.exports = function () {
         });
     });
 
+    router.post('/board/:boardId/card/:cardId', (req, res) => {
+        mongoose.models.Card.update({_id: req.params.cardId}, {title: res.body})
+            .then((e) => {
+                res.send('Successfully edited card', e);
+            }).catch((err) => {
+            console.log(err);
+            res.status(500).send(err);
+        });
+    })
+
     router.put('/board/:id/card', (req, res) => {
-        const card = new mongoose.models.Card({board: req.params.id, title:req.query.title, category: req.query.category});
+        const card = new mongoose.models.Card({
+            board: req.params.id,
+            title: req.query.title,
+            category: req.query.category
+        });
         card.save().then(data => {
             websockets.addCard(data);
             res.json(data);

@@ -7,7 +7,18 @@ function listCards(cards) {
 }
 
 function appendCard(card) {
-    $(".board").append(`<p data-id="${card._id}">${card.title}<button class="del-card" data-id="${card._id}">Del</button></p>`);
+    $(".board").append(`<p data-id="${card._id}"><input class="card-text" type="text" value="${card.title}"/><button class="del-card" data-id="${card._id}">Del</button></p>`);
+    $(".card-text").off('change');
+    $(".card-text").change(e => {
+        const cardId = e.target.parentNode.dataset.id
+        fetch(`/api/board/${window.boardId}/card/${cardId}`, {
+            method: 'POST', headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({title: e.target.value})
+        });
+    });
     $('.del-card').click((e) => {
         const cardId = e.target.dataset.id;
         fetch(`/api/board/${window.boardId}/card/${cardId}`, {method: 'DELETE'})
@@ -18,7 +29,7 @@ function appendCard(card) {
 $(function () {
     $('#addCard').click(() => {
         const title = $('#newCardTitle').val();
-        fetch(`/api/board/${window.boardId}/card?title=${title}&category=good`, {method:'PUT'})
+        fetch(`/api/board/${window.boardId}/card?title=${title}&category=good`, {method: 'PUT'}).catch(err => console.log(err))
     });
 });
 
