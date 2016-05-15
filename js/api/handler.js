@@ -1,51 +1,35 @@
 const express = require('express');
-const mongoose = require('../config/mongo-config');
-const websockets = require('../websockets');
+const _ = require('lodash');
+const db = require('../db/board');
+const uuid = require('uuid');
 
 module.exports = function () {
     const router = express.Router();
 
-    router.get('/board/:id/card', (req, res) => {
-        mongoose.models.Card.find({board: req.params.id}).then(data => {
-            res.json(data)
-        }).catch((err) => {
-            res.status(500).send(err);
-        })
-    });
+    router.get('/board/:id/card', (req, res) =>
+        res.json(db[req.params.id])
+    );
 
     router.delete('/board/:boardId/card/:cardId', (req, res) => {
-        const card = {board: req.params.boardId, _id: req.params.cardId};
-        mongoose.models.Card.remove(card).then(() => {
-            res.send('Successfully removed card');
-            websockets.deleteCard(card);
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send(err);
-        });
+        delete db[req.params.boardId][req.params.cardId];
+        res.send('Successfully removed card')
     });
 
     router.post('/board/:boardId/card/:cardId', (req, res) => {
-        mongoose.models.Card.update({_id: req.params.cardId}, {title: res.body})
-            .then((e) => {
-                res.send('Successfully edited card', e);
-            }).catch((err) => {
-            console.log(err);
-            res.status(500).send(err);
-        });
-    })
+        console.log(req.params);
+        db[req.params.boardId][req.params.cardId].title = res.body
+        res.send('Successfully edited card');
+    });
 
     router.put('/board/:id/card', (req, res) => {
-        const card = new mongoose.models.Card({
-            board: req.params.id,
+        const boardId = req.params.id;
+        const cardId = uuid.v4();
+        const card = {
             title: req.query.title,
             category: req.query.category
-        });
-        card.save().then(data => {
-            websockets.addCard(data);
-            res.json(data);
-        }).catch(err => {
-            res.status(500).send(err);
-        })
+        };
+        db[boardId][cardId] = card;
+        res.json(card);
     });
 
     return router;
