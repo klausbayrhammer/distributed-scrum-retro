@@ -16,8 +16,7 @@ module.exports = function () {
     });
 
     router.post('/board/:boardId/card/:cardId', (req, res) => {
-        console.log(req.params);
-        db[req.params.boardId][req.params.cardId].title = res.body
+        db[req.params.boardId][req.params.cardId].title = req.query.title;
         res.send('Successfully edited card');
     });
 
@@ -28,8 +27,11 @@ module.exports = function () {
             title: req.query.title,
             category: req.query.category
         };
+        db[boardId] = db[boardId] || {};
         db[boardId][cardId] = card;
-        res.json(card);
+        response = {};
+        response[cardId] = card;
+        res.json(response);
     });
 
     return router;
