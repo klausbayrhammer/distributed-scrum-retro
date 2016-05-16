@@ -5,13 +5,6 @@ const request = require('request-promise');
 const chai = require('chai');
 chai.should();
 
-const testdata = {
-    '1': {title: 'TDD', category: 'good'},
-    '2': {title: 'Pair Programming', category: 'good'},
-    '3': {title: 'office temperature', category: 'bad'},
-    '4': {title: 'First person in the office turns on the heater', category: 'next action'}
-};
-
 const BASE_URL = 'http://localhost:3000/api/board';
 
 function addCard(boardId, card) {
@@ -23,9 +16,27 @@ function addCard(boardId, card) {
     });
 }
 
+function editCard(existingBoardId, existingCardId, card) {
+    return request({
+            uri: `${BASE_URL}/${existingBoardId}/card/${existingCardId}`,
+            method: 'POST',
+            qs: card
+        }
+    );
+}
+
+function deleteCard(existingBoardId, existingCardId) {
+    return request({
+            uri: `${BASE_URL}/${existingBoardId}/card/${existingCardId}`,
+            method: 'DELETE'
+        }
+    );
+}
+
 function getBoard(boardId) {
     return request({uri: `${BASE_URL}/${boardId}/card`, json: true});
 }
+
 describe('API integrationtest', () => {
 
     before(done => {
@@ -35,13 +46,7 @@ describe('API integrationtest', () => {
         });
     });
 
-    it('should be able to list testdata boards', () => {
-        return request({uri: BASE_URL + '/1234/card', json: true}).then(data => {
-            data.should.deep.equal(testdata)
-        })
-    });
     it('should be able to add and retrieve cards', () => {
-
         const boardId = 1;
 
         return addCard(boardId, {
@@ -57,8 +62,9 @@ describe('API integrationtest', () => {
     describe('edit cards', () => {
         let existingCard;
         let existingCardId;
+        const existingBoardId = 2;
 
-        before(() => addCard(2, {
+        before(() => addCard(existingBoardId, {
             title: 'timwrk',
             category: 'good'
         }).then(data => {
@@ -67,10 +73,32 @@ describe('API integrationtest', () => {
         }));
 
         it('should be able to add and edit cards', () => {
-            return request({uri: `${BASE_URL}/2/card/${existingCardId}`, method: 'POST', qs: {title: 'teamwork'}}
-            ).then(() => getBoard(2))
+            return editCard(existingBoardId, existingCardId, {title: 'teamwork'})
+                .then(() => getBoard(2))
                 .then(data => {
                     data[existingCardId].should.deep.equal({title: 'teamwork', category: 'good'})
+                })
+        })
+    });
+
+    describe('delete cards', () => {
+        let existingCard;
+        let existingCardId;
+        const existingBoardId = 3;
+
+        before(() => addCard(existingBoardId, {
+            title: 'timwrk',
+            category: 'good'
+        }).then(data => {
+            existingCard = data;
+            existingCardId = Object.keys(data)[0];
+        }));
+
+        it('should remove cards on delete', () => {
+            return deleteCard(existingBoardId, existingCardId)
+                .then(() => getBoard(existingBoardId))
+                .then(data => {
+                    data.should.deep.equal({})
                 })
         })
     })
