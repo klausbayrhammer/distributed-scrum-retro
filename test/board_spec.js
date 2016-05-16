@@ -1,8 +1,10 @@
 "use strict";
 
-const server = require('../src/server');
+const serverFactory = require('../src/server');
 const request = require('request-promise');
 const chai = require('chai');
+const socketIo = require('socket.io-client');
+
 chai.should();
 
 const BASE_URL = 'http://localhost:3000/api/board';
@@ -39,19 +41,35 @@ function getBoard(boardId) {
 
 describe('API integrationtest', () => {
 
-    before(server);
+    let server;
+    before(cb => server = serverFactory(cb));
 
-    it('should be able to add and retrieve cards', () => {
-        const boardId = 1;
+    describe('add cards', () => {
 
-        return addCard(boardId, {
-            title: 'integration testing',
-            category: 'good'
-        })
-            .then(() => getBoard(boardId))
-            .then(data => {
-                data[Object.keys(data)[0]].should.deep.equal({title: 'integration testing', category: 'good'})
+        it('should be able to add and retrieve cards', () => {
+            const boardId = 1;
+
+            return addCard(boardId, {
+                title: 'integration testing',
+                category: 'good'
+            })
+                .then(() => getBoard(boardId))
+                .then(data => {
+                    data[Object.keys(data)[0]].should.deep.equal({title: 'integration testing', category: 'good'})
+                });
+        });
+        it('should fire newCard event if card is added', cb => {
+            const boardId = 11;
+            const card = {title: 'socket.io knowledge', category: 'bad'};
+            const socketIoClient = socketIo.connect('http://localhost:3000');
+            socketIoClient.on(`${boardId}/newCard`, data => {
+                    data[Object.keys(data)[0]].should.deep.equal(card);
+                    cb();
             });
+            socketIoClient.on('connect', () => {
+                addCard(boardId, card)
+            })
+        })
     });
 
     describe('edit cards', () => {

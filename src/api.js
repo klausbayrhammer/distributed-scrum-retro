@@ -1,7 +1,8 @@
 const express = require('express');
-const _ = require('lodash');
 const db = require('./db/board');
 const uuid = require('uuid');
+const websockets = require('./websockets');
+
 
 module.exports = function () {
     const router = express.Router();
@@ -27,11 +28,13 @@ module.exports = function () {
             title: req.query.title,
             category: req.query.category
         };
+        console.log('adding new card', card);
         db[boardId] = db[boardId] || {};
         db[boardId][cardId] = card;
         response = {};
         response[cardId] = card;
         res.json(response);
+        websockets.addCard(boardId, response);
     });
 
     return router;

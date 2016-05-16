@@ -1,6 +1,5 @@
 const express = require('express');
 const apiRoute = require('./api');
-const websockets = require('./websockets');
 
 const app = express();
 
