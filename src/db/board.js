@@ -8,4 +8,4 @@ const testdata = {
     }
 };
 
-module.exports = testdata
+module.exports = testdata;

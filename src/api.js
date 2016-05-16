@@ -1,6 +1,6 @@
 const express = require('express');
 const _ = require('lodash');
-const db = require('../db/board');
+const db = require('./db/board');
 const uuid = require('uuid');
 
 module.exports = function () {
