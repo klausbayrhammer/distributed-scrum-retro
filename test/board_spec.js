@@ -1,6 +1,6 @@
 "use strict";
 
-const app = require('../src/app');
+const server = require('../src/server');
 const request = require('request-promise');
 const chai = require('chai');
 chai.should();
@@ -39,12 +39,7 @@ function getBoard(boardId) {
 
 describe('API integrationtest', () => {
 
-    before(done => {
-        app.listen(3000, () => {
-            console.log('Running');
-            done();
-        });
-    });
+    before(server);
 
     it('should be able to add and retrieve cards', () => {
         const boardId = 1;
