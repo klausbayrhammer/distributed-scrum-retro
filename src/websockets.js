@@ -20,8 +20,13 @@ function deleteCard(card) {
     //TODO
 }
 
+function editCard(boardId, card) {
+    io.to(boardId).emit('editCard', card);
+}
+
 module.exports = {
     init: init,
     addCard: addCard,
-    deleteCard: deleteCard
+    deleteCard: deleteCard,
+    editCard: editCard
 };

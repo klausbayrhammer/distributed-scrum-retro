@@ -117,7 +117,16 @@ describe('API integrationtest', () => {
                 .then(data => {
                     data[existingCardId].should.deep.equal({title: 'teamwork', category: 'good'})
                 })
-        })
+        });
+        it('should fire editCard event if card is edited', cb => {
+            createSocketIoClient(existingBoardId).then(socketIoClient => {
+                socketIoClient.on('editCard', data => {
+                    data[existingCardId].should.deep.equal({title: 'better teamwork', category: 'good'});
+                    cb();
+                });
+                editCard(existingBoardId, existingCardId, {title: 'better teamwork'})
+            })
+        });
     });
 
     describe('delete cards', () => {

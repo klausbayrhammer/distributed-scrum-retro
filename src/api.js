@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('./db/board');
 const uuid = require('uuid');
 const websockets = require('./websockets');
-
+const _ = require('lodash');
 
 module.exports = function () {
     const router = express.Router();
@@ -17,7 +17,10 @@ module.exports = function () {
     });
 
     router.post('/board/:boardId/card/:cardId', (req, res) => {
-        db[req.params.boardId][req.params.cardId].title = req.query.title;
+        const boardId = req.params.boardId;
+        const cardId = req.params.cardId;
+        db[boardId][cardId].title = req.query.title;
+        websockets.editCard(boardId, _.pick(db[boardId], cardId));
         res.send('Successfully edited card');
     });
 
@@ -31,8 +34,7 @@ module.exports = function () {
         console.log('adding new card', card);
         db[boardId] = db[boardId] || {};
         db[boardId][cardId] = card;
-        response = {};
-        response[cardId] = card;
+        response = _.pick(db[boardId], cardId);
         res.json(response);
         websockets.addCard(boardId, response);
     });

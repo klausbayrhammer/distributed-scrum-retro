@@ -9,4 +9,3 @@ Tool for conducting distributed scrum retrospectives
 
 * Merge
 * Vote (+ and -)
-* socketio namespaces
