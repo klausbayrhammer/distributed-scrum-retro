@@ -7,11 +7,12 @@ const socketIo = require('socket.io-client');
 
 chai.should();
 
-const BASE_URL = 'http://localhost:3000/api/board';
+const BASE_URL = `http://localhost:3000`;
+const API_URL = `${BASE_URL}/api/board`;
 
 function addCard(boardId, card) {
     return request({
-        uri: `${BASE_URL}/${boardId}/card`,
+        uri: `${API_URL}/${boardId}/card`,
         method: 'PUT',
         qs: card,
         json: true
@@ -20,7 +21,7 @@ function addCard(boardId, card) {
 
 function editCard(existingBoardId, existingCardId, card) {
     return request({
-            uri: `${BASE_URL}/${existingBoardId}/card/${existingCardId}`,
+            uri: `${API_URL}/${existingBoardId}/card/${existingCardId}`,
             method: 'POST',
             qs: card
         }
@@ -29,19 +30,19 @@ function editCard(existingBoardId, existingCardId, card) {
 
 function deleteCard(existingBoardId, existingCardId) {
     return request({
-            uri: `${BASE_URL}/${existingBoardId}/card/${existingCardId}`,
+            uri: `${API_URL}/${existingBoardId}/card/${existingCardId}`,
             method: 'DELETE'
         }
     );
 }
 
 function getBoard(boardId) {
-    return request({uri: `${BASE_URL}/${boardId}/card`, json: true});
+    return request({uri: `${API_URL}/${boardId}/card`, json: true});
 }
 
 function createSocketIoClient(boardId) {
     return new Promise(resolve => {
-        const socketIoClient = socketIo.connect(`http://localhost:3000`);
+        const socketIoClient = socketIo.connect(BASE_URL);
         socketIoClient.emit('board', boardId);
         socketIoClient.on('connect', () => {
             resolve(socketIoClient);
