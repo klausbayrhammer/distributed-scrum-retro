@@ -12,7 +12,10 @@ module.exports = function () {
     );
 
     router.delete('/board/:boardId/card/:cardId', (req, res) => {
-        delete db[req.params.boardId][req.params.cardId];
+        const cardId = req.params.cardId;
+        const boardId = req.params.boardId;
+        delete db[boardId][cardId];
+        websockets.deleteCard(boardId, cardId);
         res.send('Successfully removed card')
     });
 

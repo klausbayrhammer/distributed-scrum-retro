@@ -49,6 +49,9 @@ function createSocketIoClient(boardId) {
     });
 }
 
+function firstCard(data) {
+    return data[Object.keys(data)[0]];
+}
 describe('API integrationtest', () => {
 
     let server;
@@ -65,7 +68,7 @@ describe('API integrationtest', () => {
             })
                 .then(() => getBoard(boardId))
                 .then(data => {
-                    data[Object.keys(data)[0]].should.deep.equal({title: 'integration testing', category: 'good'})
+                    firstCard(data).should.deep.equal({title: 'integration testing', category: 'good'})
                 });
         });
         it('should fire newCard event if card is added', cb => {
@@ -73,7 +76,7 @@ describe('API integrationtest', () => {
             const card = {title: 'socket.io knowledge', category: 'bad'};
             createSocketIoClient(boardId).then(socketIoClient => {
                 socketIoClient.on('newCard', data => {
-                    data[Object.keys(data)[0]].should.deep.equal(card);
+                    firstCard(data).should.deep.equal(card);
                     cb();
                 });
                 addCard(boardId, card);
@@ -85,7 +88,7 @@ describe('API integrationtest', () => {
             const card = {title: 'socket.io knowledge', category: 'bad'};
             const socketIoClientToBeNotified = createSocketIoClient(boardIdWithAddedCard);
             socketIoClientToBeNotified.then((socket) => socket.on(`newCard`, data => {
-                data[Object.keys(data)[0]].should.deep.equal(card);
+                firstCard(data).should.deep.equal(card);
                 cb();
             }));
             const socketIoClientNotNotified = createSocketIoClient(boardIdWithoutCard);
@@ -142,12 +145,22 @@ describe('API integrationtest', () => {
             existingCardId = Object.keys(data)[0];
         }));
 
-        it('should remove cards on delete', () => {
+        it('should delete cards on delete', () => {
             return deleteCard(existingBoardId, existingCardId)
                 .then(() => getBoard(existingBoardId))
                 .then(data => {
                     data.should.deep.equal({})
                 })
         })
+        
+        it('should fire deleteCard event if card is deleted', cb => {
+            createSocketIoClient(existingBoardId).then(socketIoClient => {
+                socketIoClient.on('deleteCard', data => {
+                    data.should.deep.equal(existingCardId);
+                    cb();
+                });
+                deleteCard(existingBoardId, existingCardId)
+            })
+        });
     })
 });

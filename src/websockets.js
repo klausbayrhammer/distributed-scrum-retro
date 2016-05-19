@@ -16,8 +16,8 @@ function addCard(boardId, card) {
     io.to(boardId).emit('newCard', card);
 }
 
-function deleteCard(card) {
-    //TODO
+function deleteCard(boardId, cardId) {
+    io.to(boardId).emit('deleteCard', cardId);
 }
 
 function editCard(boardId, card) {
