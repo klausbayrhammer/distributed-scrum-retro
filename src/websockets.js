@@ -5,10 +5,15 @@ let io;
 
 function init(server) {
     io = socketIo(server);
+    io.sockets.on('connection', function(socket) {
+        socket.on('board', function(board) {
+            socket.join(board);
+        });
+    });
 }
 
 function addCard(boardId, card) {
-    io.sockets.emit(`${boardId}/newCard`, card);
+    io.to(boardId).emit('newCard', card);
 }
 
 function deleteCard(card) {

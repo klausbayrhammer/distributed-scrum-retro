@@ -39,6 +39,16 @@ function getBoard(boardId) {
     return request({uri: `${BASE_URL}/${boardId}/card`, json: true});
 }
 
+function createSocketIoClient(boardId) {
+    return new Promise(resolve => {
+        const socketIoClient = socketIo.connect(`http://localhost:3000`);
+        socketIoClient.emit('board', boardId);
+        socketIoClient.on('connect', () => {
+            resolve(socketIoClient);
+        });
+    });
+}
+
 describe('API integrationtest', () => {
 
     let server;
@@ -61,14 +71,30 @@ describe('API integrationtest', () => {
         it('should fire newCard event if card is added', cb => {
             const boardId = 11;
             const card = {title: 'socket.io knowledge', category: 'bad'};
-            const socketIoClient = socketIo.connect('http://localhost:3000');
-            socketIoClient.on(`${boardId}/newCard`, data => {
+            createSocketIoClient(boardId).then(socketIoClient => {
+                socketIoClient.on('newCard', data => {
                     data[Object.keys(data)[0]].should.deep.equal(card);
                     cb();
-            });
-            socketIoClient.on('connect', () => {
-                addCard(boardId, card)
+                });
+                addCard(boardId, card);
             })
+        });
+        it('websocket listeners on other boards should not be notified if new cards are added', cb => {
+            const boardIdWithAddedCard = 12;
+            const boardIdWithoutCard = 13;
+            const card = {title: 'socket.io knowledge', category: 'bad'};
+            const socketIoClientToBeNotified = createSocketIoClient(boardIdWithAddedCard);
+            socketIoClientToBeNotified.then((socket) => socket.on(`newCard`, data => {
+                data[Object.keys(data)[0]].should.deep.equal(card);
+                cb();
+            }));
+            const socketIoClientNotNotified = createSocketIoClient(boardIdWithoutCard);
+            socketIoClientNotNotified.then((socket) => socket.on('newCard', () => {
+                cb(new Error('should not have been called'))
+            }));
+            Promise.all([socketIoClientNotNotified, socketIoClientNotNotified]).then(() => {
+                addCard(boardIdWithAddedCard, card)
+            });
         })
     });
 
