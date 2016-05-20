@@ -1,6 +1,5 @@
 "use strict";
 
-const serverFactory = require('../src/server');
 const request = require('request-promise');
 const chai = require('chai');
 const socketIo = require('socket.io-client');
@@ -36,6 +35,13 @@ module.exports = {
             }
         );
     },
+    merge: function (boardId, firstCardId, secondCardId) {
+        return request({
+            uri: `${API_URL}/${boardId}`,
+            method: 'MERGE',
+            qs: {firstCardId: firstCardId, secondCardId: secondCardId}
+        });
+    },
     getBoard: function (boardId) {
         return request({uri: `${API_URL}/${boardId}/card`, json: true});
     },
@@ -53,4 +59,4 @@ module.exports = {
     firstCard: function (data) {
         return data[Object.keys(data)[0]];
     }
-}
+};

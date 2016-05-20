@@ -7,5 +7,4 @@ Tool for conducting distributed scrum retrospectives
 
 #TODO
 
-* Merge
 * Vote (+ and -)
